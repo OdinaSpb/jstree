@@ -1,19 +1,12 @@
-#summary Usage guide
+#summary Brief introduction to jsTree
 #labels Featured
-
-= Introduction =
-
-A brief introduction to jsTree and how to utilize it.
-
-
-= Details =
 
 == The instance ==
 
 _This is how you create an instance:_
 {{{
    tree = new tree_component();
-   tree.init($("#box"),{ 
+   tree.init($("#box"),{                // the first argument is the node to be filled with the tree
        data      : "path-to-data.xml", 
        xsl       : "nested.xsl",        // nested or flat (included)
        dflt      : "site_24",           // id of the default node to select
