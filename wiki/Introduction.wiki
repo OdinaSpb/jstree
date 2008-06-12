@@ -4,10 +4,10 @@
 ==Dependencies==
 
 
-  * [included] jQuery
-  * [included] jQuery listen plugin
-  * [included] Sarrissa & jQuery XSLT plugin (_only if using XML as source_)
-  * [included] jQuery metadata plugin (_only if using metadata rules_)
+  * _included_ jQuery
+  * _included_ jQuery listen plugin
+  * _included_ Sarrissa & jQuery XSLT plugin (_only if using XML as source_)
+  * _included_ jQuery metadata plugin (_only if using metadata rules_)
 
 
 
