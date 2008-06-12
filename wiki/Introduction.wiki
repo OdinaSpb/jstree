@@ -1,45 +1,320 @@
 #summary Brief introduction to jsTree
 #labels Featured
 
-== The instance ==
+==Dependencies==
 
-_This is how you create an instance:_
+
+  * [included] jQuery
+  * [included] jQuery listen plugin
+  * [included] Sarrissa & jQuery XSLT plugin (_only if using XML as source_)
+  * [included] jQuery metadata plugin (_only if using metadata rules_)
+
+
+
+==How to create and configure==
+===Includes===
 {{{
-   tree = new tree_component();
-   tree.init($("#box"),{                // the first argument is the node to be filled with the tree
-       data      : "path-to-data.xml", 
-       xsl       : "nested.xsl",        // nested or flat (included)
-       dflt      : "site_24",           // id of the default node to select
-       languages : [ "en", "bg" ],      // languages if any - if not - omit
-       move      : {                    // moving/sorting rules if not specified - no drag&drop
-                 rules      : [
-                                "folder after folder",
-                                "folder before folder",
-                                "folder inside folder"
-                              ],
-                 draggables : ["folder"]
-            }
-   });
+<!-- REQUIRED SCRIPTS AND STYLES -->
+<link rel="stylesheet" type="text/css" href="jsTree/tree_component.css" />
+<script type="text/javascript" src="jsTree/css.js"></script>
+<script type="text/javascript" src="jsTree/jquery.js"></script>
+<script type="text/javascript" src="jsTree/jquery.listen.js"></script>
+<script type="text/javascript" src="jsTree/tree_component.js"></script>
+
+
+<!-- BEGIN OF OPTIONAL SCRIPTS -->
+<!-- required for xml data type -->
+<script type="text/javascript" src="jsTree/sarissa.js"></script>
+<script type="text/javascript" src="jsTree/sarissa_ieemu_xpath.js"></script>
+<script type="text/javascript" src="jsTree/jquery.xslt.js"></script>
+<!-- required for metadata rule definitions -->
+<script type="text/javascript" src="jsTree/jquery.metadata.js"></script>
+<!-- END OF OPTIONAL SCRIPTS -->
+}}}
+===Creation===
+{{{
+var tree = new tree_component();
+}}}
+===Initizalization===
+{{{
+var tree.init(_container_node_,[{ _options_ }]);
+}}}
+===Configuration (not required)===
+{{{
+{
+	data	: false,	 // can be false, JSON or path to xml file
+	xsl	: "nested.xsl",	 // if data is xml which xsl to it transform with ("nested" or "flat")
+	languages	: [],	 // what are the languages - default - no language versions
+	dflt		: false, // default node to select on load
+	dots		: true,	 // Dots or no dots (see customization)
+	type_attr	: "rel", // in what attribute is the type stored (if not metadata)
+	metadata	: false, // use metadata? false or attribute name
+	rules		: {	 // RULES - read below
+		use_inline	: false,	// CHECK FOR INLINE RULES - REQUIRES METADATA
+		clickable	: [],		// which node types can the user select | default - all
+		deletable	: [],		// which node types can the user delete | default - all
+		creatable	: [],		// which node types can the user create in | default - all
+		draggable	: [],		// which node types can the user move | default - none
+		dragrules	: []		// allowed operations between nodes | default - none
+	},
+	callback	: {	// various callbacks to attach custom logic to
+		onchange	: function(NODE) { },		// focus changed
+		onrename	: function(NODE) { },		// node renamed ISNEW - TRUE|FALSE
+		onmove		: function(NODE,REF_NODE,TYPE) { }, // move completed
+		oncreate	: function(NODE,REF_NODE,TYPE) { }, // node created
+		ondelete	: function(NODE) { },		// node deleted
+		onopen		: function(NODE) { },		// node opened
+		onclose		: function(NODE) { }		// node closed
+	}
+}
+}}}
+===Container==
+The container node of the tree, can be: jQuery object, DOM node.
+===Data==
+The data for the tree. Default is predefined HTML.
+===predefined HTML===
+Used by not passing this attribute. Binds events and display only to the container element's content. Expected content is as follows:
+{{{
+<!-- SINGLE NODE -->
+<li id="_node_identificator_">
+	<a href="#">_node_title_</a>
+</li>
+<!-- NODE WITH CHILDREN -->
+<li id="_node_identificator_">
+	<a href="#" style="background-image:url(_node_icon_);">_node_title_</a>
+	<ul>
+		<!-- CHILD NODES -->
+	</ul>
+</li>
+}}}
+If language versions are used:
+{{{
+<!-- SINGLE NODE -->
+<li id="_node_identificator_">
+	<a href="#" class="_language_name_">_node_title_</a>
+	<a href="#" class="_language_name_">_node_title_</a>
+</li>
+}}}
+===nested XML===
+The data parameter is the path to the file. The xsl parameter does not need changes.<br />Basic structure of the XML. All attributes of the item node get copied to the li node in the output HTML. If the hasChildren attribute is present, the output node is displayed as having children.
+No language versions
+{{{
+<xml version="1.0" encoding="utf-8" ?>
+<root>
+	<item [attribute="_attribute_value_" icon="_path_to_icon_" state="_closed|open_" hasChildren]>
+		<![CDATA[_node_title_]]>
+		<!-- NESTED ITEM NODES -->
+	</item>
+</root>
+}}}
+With language versions
+{{{
+<xml version="1.0" encoding="utf-8" ?>
+<root>
+	<item [attribute="_attribute_value_" state="closed|open" hasChildren]>
+		<content>
+			<name icon="_path_to_icon_" lang="_language_name_"><![CDATA[_node_title_]]></name>
+			<name icon="_path_to_icon_" lang="_language_name_"><![CDATA[_node_title_]]></name>
+		</content>
+		<!-- NESTED ITEM NODES -->
+	</item>
+</root>
+}}}
+===flat XML===
+The data parameter is the path to the file. The xsl parameter has to be "flat.xsl".
+Basic structure of the XML. 
+All attributes of the item node get copied to the li node in the output HTML. If the hasChildren attribute is present, the output node is displayed as having children. If the state attribute is present the node is forced in the specified state;
+No language versions
+{{{
+<xml version="1.0" encoding="utf-8" ?>
+<root>
+	<item id="_node_identificator_" parent_id="_parent_node_identificator_" [attribute="_attribute_value_" icon="_path_to_icon_" state="closed|open" hasChildren]>
+		<![CDATA[_node_title_]]>
+	</item>
+	<!-- NEXT ITEM NODES -->
+</root>
+}}}
+With language versions
+{{{
+<xml version="1.0" encoding="utf-8" ?>
+<root>
+	<item id="_node_identificator_" parent_id="_parent_node_identificator_" [attribute="_attribute_value_" icon="_path_to_icon_" state="closed|open" hasChildren]>
+		<content>
+			<name icon="_path_to_icon_" lang="_language_name_"><![CDATA[_node_title_]]></name>
+			<name icon="_path_to_icon_" lang="_language_name_"><![CDATA[_node_title_]]></name>
+		</content>
+	</item>
+	<!-- NEXT ITEM NODES -->
+</root>
+}}}
+===JSON===
+JSON can be passed as the data parameter. Here is the appropriate form.
+No langauge versions
+{{{
+{ 
+	attributes: { id : "_node_identificator_" }, 
+	data: "_node_identificator_", 
+	icons: "_path_to_icon_", 
+	children: [ // an array of child nodes objects ]
+}
+}}}
+With langauge versions:
+Note, the data and icons array must be ordered in the same order as the passed languages array (see below)
+{{{
+{ 
+	attributes: { id : "_node_identificator_" }, 
+	data: ["_node_identificator_", "_node_identificator_", ... ], 
+	icons: ["_path_to_icon_", "_path_to_icon_", ... ], 
+	children: [ // an array of child nodes objects ]
+}
 }}}
 
-== The data ==
+===xsl===
+Used only with xml data sources - should be either "flat.xsl" or "nested.xsl". Default is "nested.xsl".
 
-The structure of the xml should be nested or flat (use xsl accordingly):
-
-_Nested:_
+===languages===
+An array of language names, if not specified, there are no language versions. The first item in the array is the default language and be visible onload
+===dflt===
+Default node to select onload
+===dots===
+Whether to initially show dots (see customization for more). Default is true.
+===type_attr===
+Attribute where the type of the node is stored (default is rel). It is only used, when metadata is false.
+===metadata===
+Use metadata read from nodes. Either false, or the attribute name storing the data. Default is false. Requires metadata plugin.
+===rules===
+An object specifying default behaviours in the tree.
+===use_inline===
+Will there be inline rules (requires metadata plugin). This enables you to set individual properties on nodes. For example all nodes of type folder are clickable, but the node "Home" of type folder is not. Also certain rules are only available as inline rules - such as "max_depth", "max_children" and "valid_children".
+===clickable===
+Which node types are clickable - an array of string values. If the array is empty - all node types are clickable.
+===deletable===
+Which node types are deletable - an array of string values. If the array is empty - all node types are deletable.
+===creatable===
+Which node types can the user create new nodes in - an array of string values. If the array is empty - all node types are creatable.
+===draggable===
+Which node types can the user drag - an array of string values. If the array is empty - there is no drag & drop (possible value is "all").
+===dragrules===
+An array of string values describing possible moves. If the array is empty - there is no drag & drop (possible value is "all"). For example:
 {{{
-<item id='node_1'>Node 1
-   <item id='node_2'>Node 2</item>
-   <item id='node_3'>Node 3
-       <item id='node_4'>Node 4</item>
-   </item>
+[
+	"folder after folder",
+	"folder before folder",
+	"file inside folder",
+	"file before file",
+	"file after file"
+]
+/* 
+ * This set of rules insures that there is only one level of folders.
+ * and there are no files outside folders, and the files can be ordered
+ * inside the folder.
+ */
+}}}
+===callback===
+There can be a few callbacks attached, so that you can keep your own logic.
+  * onchange - function(NODE) - fired when focus changes, NODE is the selected DOM node
+  * onopen - function(NODE) - NODE is the opened DOM node
+  * onclose - function(NODE) - NODE is the closed DOM node
+  * oncreate - function(NODE,REF_NODE) - NODE is the created DOM node, REF_NODE is the parent DOM node
+  * onrename - function(NODE) - NODE is the renamed DOM node
+  * onmove - function(NODE,REF_NODE,TYPE) - NODE is the created DOM node, REF_NODE is the reference node, TYPE is one of INSIDE, AFTER, BEFORE
+  * ondelete - function(NODE) - NODE is the deleted DOM node		
+
+==Customization==
+===Custom node icon==
+
+===Data independant:===
+Globally for all trees
+{{{
+.tree li a { background-image:url(_node_icon_); }
+}}}
+Or for a specific tree
+{{{
+_container_selector_ li a { background-image:url(_node_icon_); }
+}}}
+For a specific langauge
+{{{
+_container_selector_ OR .tree li a._language_name_ { background-image:url(_node_icon_); }
+}}}
+
+===When using Predefined HTML===
+If you are using predefined HTML you can specify the background-image inline for any <a> nodes
+{{{
+<li id="_node_identificator_">
+	<a href="#" style="background-image:url(_node_icon_);">_node_title_</a>
+</li>
+}}}
+
+===When using XML===
+If you are using XML as source - simply pass an icon attribute. Here is how it looks if you have no language versions:
+{{{
+<item icon="_node_icon_" ...>
+}}}
+If you have langauge versions you can specify different icons for each language:
+{{{
+<item ...>
+	<content>
+		<name lang="_language_name_" icon="_node_icon_" ...> ... </name>
+		<name lang="_language_name_" icon="_node_icon_" ...> ... </name>
+	</content>
 </item>
 }}}
 
-_Flat:_
+===When using JSON===
+If you are using JSON as source you can specify node icon with the icon attribute.
+No language versions
 {{{
-<item id='node_1' parent_id='0'>Node 1</item>
-<item id='node_2' parent_id='node_1'>Node 2</item>
-<item id='node_3' parent_id='node_1'>Node 3</item>
-<item id='node_4' parent_id='node_3'>Node 4</item>
+{
+	attributes : { ... },
+	data : "...",
+	icon : "_node_icon_"
+}
+}}}
+Language versions
+{{{
+{
+	attributes : { ... },
+	data : ["...", "...", ... ],
+	icon : ["_node_icon_", "_node_icon_", ... ]
+}
+}}}
+
+===Hotkeys==
+I found this jquery plugin extremely useful - check it out
+{{{
+$.hotkeys.add('_key_', { disableInInput: true }, function() { _instance_._function_([_arguments_]); });
+
+/* for example */
+$.hotkeys.add('f2',	{ disableInInput: true }, function() { tree.rename(); });
+$.hotkeys.add('n',	{ disableInInput: true }, function() { tree.create(); });
+$.hotkeys.add('d',	{ disableInInput: true }, function() { tree.remove(); });
+$.hotkeys.add('l',	{ disableInInput: true }, function() { tree.cycle_lang(); });
+$.hotkeys.add('r',	{ disableInInput: true }, function() { tree.refresh(); });
+$.hotkeys.add('up',	{ disableInInput: true }, function() { tree.get_prev(); });
+$.hotkeys.add('down',	{ disableInInput: true }, function() { tree.get_next(); });
+$.hotkeys.add('left',	{ disableInInput: true }, function() { tree.get_left(); });
+$.hotkeys.add('right',	{ disableInInput: true }, function() { tree.get_right(); });
+}}}
+
+===Dots==
+You can choose whether to have dots or not, and toggle them on the fly (attach to event)
+In the configuration
+{{{
+_instance_.init(_container_node_,{ dots : false OR true });
+}}}
+Runtime using built-in function
+{{{
+_instance_.toggleDots();
+}}}
+Runtime using jQuery
+{{{
+$(_container_node_).addClass("no_dots");
+$(_container_node_).removeClass("no_dots");
+$(_container_node_).toggleClass("no_dots");
+}}}
+In the HTML markup
+{{{
+<_container_node_ class="no_dots">
+	...
+</_container_node_>
 }}}
