@@ -272,7 +272,7 @@
 			v = (u.match( /.+?(?:rv|it|ra|ie)[\/: ]([\d.]+)/ ) || [0,'0'])[1],
 			css_string = '' + 
 				'.jstree ul, .jstree li { display:block; margin:0 0 0 0; padding:0 0 0 0; list-style-type:none; } ' + 
-				'.jstree li { display:block; min-height:18px; line-height:18px; white-space:nowrap; margin-left:18px; } ' + 
+				'.jstree li { display:block; min-height:18px; line-height:18px; white-space:nowrap; margin-left:18px; min-width:18px; } ' + 
 				'.jstree-rtl li { margin-left:0; margin-right:18px; } ' + 
 				'.jstree > ul > li { margin-left:0px; } ' + 
 				'.jstree-rtl > ul > li { margin-right:0px; } ' + 
@@ -978,16 +978,6 @@
  * This plugins handles selecting/deselecting/hovering/dehovering nodes
  */
 (function ($) {
-	/*
-	DESELECT ON OUTSIDE CLICK
-			var _this = this;
-			$(document).bind("click", function (e) {
-				if(!$(e.target).parents(".jstree:eq(0)").length) {
-					// $.jstree._focused().deselect_all();
-					_this.deselect_all();
-				}
-			});
-	*/
 	var scrollbar_width, e1, e2;
 	$(function() {
 		if (/msie/.test(navigator.userAgent.toLowerCase())) {
@@ -3006,6 +2996,13 @@
 			})(xm, xs, callback), 100);
 			return true;
 		}
+		if(typeof window.DOMParser !== "undefined" && typeof window.XMLHttpRequest !== "undefined" && typeof window.XSLTProcessor === "undefined") {
+			xml = new DOMParser().parseFromString(xml, "text/xml");
+			xsl = new DOMParser().parseFromString(xsl, "text/xml");
+			// alert(xml.transformNode());
+			// callback.call(null, new XMLSerializer().serializeToString(rs));
+			
+		}
 		if(typeof window.DOMParser !== "undefined" && typeof window.XMLHttpRequest !== "undefined" && typeof window.XSLTProcessor !== "undefined") {
 			processor = new XSLTProcessor();
 			support = $.isFunction(processor.transformDocument) ? (typeof window.XMLSerializer !== "undefined") : true;
@@ -3676,6 +3673,7 @@
 						}
 					}, this))
 				.bind("destroy.jstree", $.proxy(function () {
+						// TODO: move this to descruct method
 						if(this.data.contextmenu) {
 							$.vakata.context.hide();
 						}
