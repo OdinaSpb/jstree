@@ -466,7 +466,7 @@
 				var _this = this;
 				this.data.core.to_open = [];
 				this.get_container_ul().find("li.jstree-open").each(function () { 
-					if(this.id) { _this.data.core.to_open.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.")); }
+					if(this.id) { _this.data.core.to_open.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:")); }
 				});
 				this.__callback(_this.data.core.to_open);
 			},
@@ -479,8 +479,8 @@
 				if(!is_callback) { 
 					this.data.core.reopen = false; 
 					this.data.core.refreshing = true; 
-					this.data.core.to_open = $.map($.makeArray(this.data.core.to_open), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\."); });
-					this.data.core.to_load = $.map($.makeArray(this.data.core.to_load), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\."); });
+					this.data.core.to_open = $.map($.makeArray(this.data.core.to_open), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"); });
+					this.data.core.to_load = $.map($.makeArray(this.data.core.to_load), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"); });
 					if(this.data.core.to_open.length) {
 						this.data.core.to_load = this.data.core.to_load.concat(this.data.core.to_open);
 					}
@@ -530,6 +530,7 @@
 				obj = this._get_node(obj);
 				if(!obj) { obj = -1; }
 				if(obj !== -1) { obj.children("UL").remove(); }
+				else { this.get_container_ul().empty(); }
 				this.load_node(obj, function () { _this.__callback({ "obj" : obj}); _this.reload_nodes(); });
 			},
 			// Dummy function to fire after the first load (so that there is a jstree.loaded event)
@@ -852,7 +853,7 @@
 				p.ot = $.jstree._reference(o) || this;
 				p.o = p.ot._get_node(o);
 				p.r = r === - 1 ? -1 : this._get_node(r);
-				p.p = (typeof pos === "undefined") ? "last" : pos; // TODO: move to a setting
+				p.p = (typeof pos === "undefined" || pos === false) ? "last" : pos; // TODO: move to a setting
 				if(!is_cb && prepared_move.o && prepared_move.o[0] === p.o[0] && prepared_move.r[0] === p.r[0] && prepared_move.p === p.p) {
 					this.__callback(prepared_move);
 					if(cb) { cb.call(this, prepared_move); }
@@ -939,7 +940,7 @@
 				this.__rollback();
 				var o = false;
 				if(is_copy) {
-					o = obj.o.clone();
+					o = obj.o.clone(true);
 					o.find("*[id]").andSelf().each(function () {
 						if(this.id) { this.id = "copy_" + this.id; }
 					});
@@ -1083,13 +1084,13 @@
 			save_selected : function () {
 				var _this = this;
 				this.data.ui.to_select = [];
-				this.data.ui.selected.each(function () { if(this.id) { _this.data.ui.to_select.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.")); } });
+				this.data.ui.selected.each(function () { if(this.id) { _this.data.ui.to_select.push("#" + this.id.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:")); } });
 				this.__callback(this.data.ui.to_select);
 			},
 			reselect : function () {
 				var _this = this,
 					s = this.data.ui.to_select;
-				s = $.map($.makeArray(s), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\."); });
+				s = $.map($.makeArray(s), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"); });
 				// this.deselect_all(); WHY deselect, breaks plugin state notifier?
 				$.each(s, function (i, val) { if(val && val !== "#") { _this.select_node(val); } });
 				this.data.ui.selected = this.data.ui.selected.filter(function () { return this.parentNode; });
@@ -1285,6 +1286,7 @@
 							var i = obj.children(".jstree-rename-input"),
 								v = i.val();
 							if(v === "") { v = t; }
+							h1.remove();
 							i.remove(); // rollback purposes
 							this.set_text(obj,t); // rollback purposes
 							this.rename_node(obj, v);
@@ -2949,7 +2951,7 @@
 				if(this.data.ui && this.data.checkbox.noui) { 
 					var _this = this,
 						s = this.data.ui.to_select;
-					s = $.map($.makeArray(s), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\."); });
+					s = $.map($.makeArray(s), function (n) { return "#" + n.toString().replace(/^#/,"").replace(/\\\//g,"/").replace(/\//g,"\\\/").replace(/\\\./g,".").replace(/\./g,"\\.").replace(/\:/g,"\\:"); });
 					this.deselect_all();
 					$.each(s, function (i, val) { _this.check_node(val); });
 					this.__callback();
@@ -3157,6 +3159,15 @@
 			'	</li>' + 
 			'</xsl:template>' + 
 			'</xsl:stylesheet>'
+	},
+	escape_xml = function(string) {
+		return string
+			.toString()
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&apos;');
 	};
 	$.jstree.plugin("xml_data", {
 		defaults : { 
@@ -3165,7 +3176,8 @@
 			xsl : "flat",
 			clean_node : false,
 			correct_state : true,
-			get_skip_empty : false
+			get_skip_empty : false,
+			get_include_preamble : true
 		},
 		_fn : {
 			load_node : function (obj, s_call, e_call) { var _this = this; this.load_node_xml(obj, function () { _this.__callback({ "obj" : _this._get_node(obj) }); s_call.call(this); }, e_call); },
@@ -3317,19 +3329,24 @@
 
 				a_attr = $.isArray(a_attr) ? a_attr : [ ];
 
-				if(!is_callback) { result += "<root>"; }
+				if(!is_callback) { 
+					if(s.xml_data.get_include_preamble) { 
+						result += '<' + '?xml version="1.0" encoding="UTF-8"?' + '>'; 
+					}
+					result += "<root>"; 
+				}
 				obj.each(function () {
 					result += "<item";
 					li = $(this);
 					$.each(li_attr, function (i, v) { 
 						var t = li.attr(v);
 						if(!s.xml_data.get_skip_empty || typeof t !== "undefined") {
-							result += " " + v + "=\"" + (" " + (t || "")).replace(/ jstree[^ ]*/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"") + "\""; 
+							result += " " + v + "=\"" + escape_xml((" " + (t || "")).replace(/ jstree[^ ]*/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"")) + "\""; 
 						}
 					});
 					if(li.hasClass("jstree-open")) { result += " state=\"open\""; }
 					if(li.hasClass("jstree-closed")) { result += " state=\"closed\""; }
-					if(tp === "flat") { result += " parent_id=\"" + is_callback + "\""; }
+					if(tp === "flat") { result += " parent_id=\"" + escape_xml(is_callback) + "\""; }
 					result += ">";
 					result += "<content>";
 					a = li.children("a");
@@ -3339,22 +3356,22 @@
 						result += "<name";
 						if($.inArray("languages", s.plugins) !== -1) {
 							$.each(s.languages, function (k, z) {
-								if(tmp1.hasClass(z)) { result += " lang=\"" + z + "\""; lang = z; return false; }
+								if(tmp1.hasClass(z)) { result += " lang=\"" + escape_xml(z) + "\""; lang = z; return false; }
 							});
 						}
 						if(a_attr.length) { 
 							$.each(a_attr, function (k, z) {
 								var t = tmp1.attr(z);
 								if(!s.xml_data.get_skip_empty || typeof t !== "undefined") {
-									result += " " + z + "=\"" + (" " + t || "").replace(/ jstree[^ ]*/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"") + "\"";
+									result += " " + z + "=\"" + escape_xml((" " + t || "").replace(/ jstree[^ ]*/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"")) + "\"";
 								}
 							});
 						}
 						if(tmp1.children("ins").get(0).className.replace(/jstree[^ ]*|$/ig,'').replace(/^\s+$/ig,"").length) {
-							result += ' icon="' + tmp1.children("ins").get(0).className.replace(/jstree[^ ]*|$/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"") + '"';
+							result += ' icon="' + escape_xml(tmp1.children("ins").get(0).className.replace(/jstree[^ ]*|$/ig,'').replace(/\s+$/ig," ").replace(/^ /,"").replace(/ $/,"")) + '"';
 						}
 						if(tmp1.children("ins").get(0).style.backgroundImage.length) {
-							result += ' icon="' + tmp1.children("ins").get(0).style.backgroundImage.replace("url(","").replace(")","").replace(/'/ig,"").replace(/"/ig,"") + '"';
+							result += ' icon="' + escape_xml(tmp1.children("ins").get(0).style.backgroundImage.replace("url(","").replace(")","").replace(/'/ig,"").replace(/"/ig,"")) + '"';
 						}
 						result += ">";
 						result += "<![CDATA[" + _this.get_text(tmp1, lang) + "]]>";
@@ -3401,7 +3418,7 @@
 							.filter("ul").each(function () { $(this).children("li:visible").eq(-1).addClass("jstree-last"); });
 					})
 					.bind("clear_search.jstree", function () {
-						$(this).children("ul").find("li").css("display","").end().jstree("clean_node", -1);
+						$(this).children("ul").find("li").css("display","").end().end().jstree("clean_node", -1);
 					});
 			}
 		},
@@ -3580,6 +3597,7 @@
 		},
 		exec	: function (i) {
 			if($.isFunction($.vakata.context.func[i])) {
+				// if is string - eval and call it!
 				$.vakata.context.func[i].call($.vakata.context.data, $.vakata.context.par);
 				return true;
 			}
@@ -3960,7 +3978,7 @@
 						}
 					}
 					if(s.max_children !== -2 && mc !== -1) {
-						ch = p === -1 ? this.get_container().children("> ul > li").length : p.children("> ul > li").length;
+						ch = p === -1 ? this.get_container().find("> ul > li").length : p.find("> ul > li").length;
 						if(ch + 1 > mc) { return false; }
 					}
 					if(s.max_depth !== -2 && md !== -1 && (md - 1) < 0) { return false; }
