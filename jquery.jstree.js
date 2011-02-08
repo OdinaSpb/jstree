@@ -116,7 +116,7 @@
 			this.each(function() {
 				var instance = instances[$.data(this, "jstree-instance-id")],
 					methodValue = (instance && $.isFunction(instance[settings])) ? instance[settings].apply(instance, args) : instance;
-					if(typeof methodValue !== "undefined" && (settings.indexOf("is_" === 0) || (methodValue !== true && methodValue !== false))) { returnValue = methodValue; return false; }
+					if(typeof methodValue !== "undefined" && (settings.indexOf("is_") === 0 || (methodValue !== true && methodValue !== false))) { alert((methodValue !== true && methodValue !== false)); returnValue = methodValue; return false; }
 			});
 		}
 		else {
